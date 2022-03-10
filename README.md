@@ -193,7 +193,7 @@ dict_keys(['post_id', 'title', 'date', 'name', 'user_id', 'text', 'images', 'vie
 ```python
 >>> capsule.checkout(0) # checkout the first version
 
->>> capsule.post # notice 'data' and 'view' are different from above
+>>> capsule.post # notice 'date' and 'view' are different from above
 
 {'post_id': '5948',
  'title': '开一条大家一起分享快乐的帖子',

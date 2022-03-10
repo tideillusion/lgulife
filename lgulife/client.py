@@ -20,7 +20,7 @@ class Client:
                 raise NotFoundError(f'post {post_id}')
             else:
                 raise Exception(res.text, res.status_code)
-        return cls.base_cache[post_id]
+        return cls.base_cache[post_id].copy()
 
     @classmethod
     def get_change_after(cls, post_id, start):
