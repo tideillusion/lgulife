@@ -15,12 +15,12 @@ class Client:
                 result = res.json()
                 result['post_id'] = result.pop('_id')
                 cls.base_cache[post_id] = result
-                return cls.base_cache[post_id].copy()
+                return cls.base_cache[post_id]
             elif res.status_code == 404:
                 raise NotFoundError(f'post {post_id}')
             else:
                 raise Exception(res.text, res.status_code)
-        return cls.base_cache[post_id].copy()
+        return cls.base_cache[post_id]
 
     @classmethod
     def get_change_after(cls, post_id, start):
@@ -34,9 +34,24 @@ class Client:
         if post_id in cls.change_cache.keys():
             result = cls.get_change_after(post_id, cls.change_cache[post_id]['version'][-1])
         else:
-            cls.change_cache[post_id] = {'version':[],'post':[],'comment':[]}
+            cls.change_cache[post_id] = {'version': [], 'post': [], 'comment': []}
             result = cls.get_change_after(post_id, '')
         cls.change_cache[post_id]['version'].extend(result['version'])
         cls.change_cache[post_id]['post'].extend(result['post'])
         cls.change_cache[post_id]['comment'].extend(result['comment'])
-        return cls.change_cache[post_id].copy()
+        return cls.change_cache[post_id]
+
+    @classmethod
+    def get_view(cls, start=None):
+        if not start:
+            res = get('http://lgulife.furchain.xyz/market')
+            if res.status_code == 200:
+                return res.json()
+            else:
+                raise NotFoundError(res.text)
+        else:
+            res = get(f'http://lgulife.furchain.xyz/market?start={start}')  # not implemented yet
+            if res.status_code == 200:
+                return res.json()
+            else:
+                raise NotFoundError(res.text)
