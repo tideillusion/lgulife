@@ -12,7 +12,74 @@ Changes are tracked in different frequency based on time elapsed starting from t
 3. Posts between "7天前" (included) and "30天前" (not included) are snapshot every 1 day
 4. Posts after "30天前" (included) are not tracked
 
+---
 
+## Installation
+
+Go to [release](https://github.com/tideillusion/lgulife/releases) and follow the instructions.
+
+
+## V1.1.x Updates
+Enable `Comment` and `Post` to checkout on their own.
+
+The `'is_deleted'` key is moved as a attribute of `Comment`.
+
+A `Comment` is valid if its `version` is between `created_at` (included) and `latest_version` (included).
+
+If a `Comment` has not been created or has been deleted at its current version, it is invalid and the reason is displayed.
+
+Trying to access data from an invalid `Comment` results into errors. 
+
+The `latest_version` attribute of `Comment` returns the latest valid version.
+
+Note: Call `checkout` on a `Comment` inside a `Capsule` could result in inconsistent versions. The `version` and `meta` of `Capsule` always inherit from its `post`. The `checkout` called on `Capsule` will be broadcast to the `Post` in its `post` and all `Comment` in its `comment`.
+
+```python
+>>> import lgulife
+>>> c = lgulife.buy("5964")
+>>> c.comment
+
+{'40650': [Deleted Since 2022-03-11 20:40:04 (1647113408)],  # Invalid because it has been deleted at its current version  
+ '40651': {'comment_id': '40651', 'date': '1天前', 'down': 0, 'hot': False, 'images': [], 'name': '俊逸的拖把', 'reply_to': '40650', 'text': '校巴智慧不智慧我不知道，丑是一定的\n可能很符合艺术潮流？？我只觉得放在校园里看起来很突兀、很不协调...一辆两辆就算了，每一辆都那么突兀...', 'up': 1, 'user_id': None},
+ '40653': {'comment_id': '40653', 'date': '1天前', 'down': 0, 'hot': False, 'images': [], 'name': '俊逸的拖把', 'reply_to': None, 'text': '而且发了也就算了 他们的消息还不能dismiss 不知道是为什么', 'up': 4, 'user_id': None},
+ '40660': {'comment_id': '40660', 'date': '1天前', 'down': 0, 'hot': False, 'images': [], 'name': '想发财的便当', 'reply_to': None, 'text': '发了就算了 关键是不能dismiss 强迫症看着那几条通知很痛苦 第一次发现的时候花了半小时研究怎么dismiss system announcement未果……\niPad上bb还因为这些通知不能顺畅下滑 更痛苦', 'up': 1, 'user_id': None},
+ '40663': {'comment_id': '40663', 'date': '1天前', 'down': 0, 'hot': False, 'images': [], 'name': '慷慨的凉茶', 'reply_to': None, 'text': 'bb打开通知本来就会卡一下，搞得我正常课发了什么update都看不到，还得等他卡完再拉下去找未读通知...关还关不掉，还不能dismiss，真是绝了。', 'up': 1, 'user_id': None},
+ '40666': {'comment_id': '40666', 'date': '1天前', 'down': 0, 'hot': False, 'images': [], 'name': '帅气的围巾', 'reply_to': None, 'text': '我今天发邮件反馈了，希望有用', 'up': 0, 'user_id': None},
+ '40669': {'comment_id': '40669', 'date': '1天前', 'down': 0, 'hot': False, 'images': [], 'name': '健壮的手链', 'reply_to': None, 'text': '对于这件事好像学校发过邮件。。（并不是说发了邮件就是合理的）\n这不是学生会的消息，跟学生会没关系，应该是学校那边的活动提醒。', 'up': 3, 'user_id': None},
+ '40672': {'comment_id': '40672', 'date': '1天前', 'down': 0, 'hot': False, 'images': ['https://www.lgulife.com//media/bbs_thread_images/2022/03/11/64a9321be48d991a5ffc47a5bf0ce59.png'], 'name': '礼貌的杨桃', 'reply_to': None, 'text': '是OSA干的（学生会dbq），但是这通知不能dismiss是真的傻逼', 'up': 4, 'user_id': None},
+ '40696': {'comment_id': '40696', 'date': '1天前', 'down': 0, 'hot': False, 'images': [], 'name': '老实的刺猬', 'reply_to': None, 'text': '这件事情还有校巴的事情都和学生会没关系吧', 'up': 0, 'user_id': None}}
+
+>>> c.comment['40650']['text']
+
+Traceback (most recent call last):
+......
+lgulife.utils.CommentAlreadyDeletedError: This Comment has been already deleted after 1647001805.
+
+>>> c.comment['40650'].checkout(c.comment['40650'].latest_version)
+>>> c.comment['40650']['text']
+
+'纯傻逼行为，不能提出智慧校巴的提案改这个了是吧'
+
+>>> [i.version for i in c.comment.values()]
+
+['2022-03-11 20:30:05 (1647001805)',
+ '2022-03-13 03:30:08 (1647113408)',
+ '2022-03-13 03:30:08 (1647113408)',
+ '2022-03-13 03:30:08 (1647113408)',
+ '2022-03-13 03:30:08 (1647113408)',
+ '2022-03-13 03:30:08 (1647113408)',
+ '2022-03-13 03:30:08 (1647113408)',
+ '2022-03-13 03:30:08 (1647113408)',
+ '2022-03-13 03:30:08 (1647113408)']
+
+>>> c.version
+
+'2022-03-13 03:30:08 (1647113408)'
+
+>>> c.version == c.post.version
+
+True
+```
 
 ---
 
@@ -46,7 +113,7 @@ The `version` attribute tells which snapshot is currently displayed. By default 
 
 The `post` attribute returns a `Post` object which represents the snapshot of post at selected version.
 
-Note: all data in `Capsule` are lazy-loaded, which means that no data are generated until you use them.
+Note: All data in `Capsule` are lazy-loaded, which means that no data are generated until you use them.
 
 ```python
 >>> capsule.meta
@@ -80,7 +147,7 @@ Note: all data in `Capsule` are lazy-loaded, which means that no data are genera
 The `comment` attribute returns a dictionary with `comment_id` as key and `Comment` object as value.
 
 ```python
->>> capsule.comment
+>>> capsule.comment # 'is_deleted' key removed since v1.1.0
 
 {'40472': {'comment_id': '40472',
   'date': '6小时前',
