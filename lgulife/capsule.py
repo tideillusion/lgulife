@@ -234,7 +234,7 @@ class Capsule:
         # self._checkout_comment(version)
 
     def update_meta(self):
-        change = Client.get_change(self._post_id)
+        change = Client().get_change(self._post_id)
         if self._is_initialized and len(change['version']) <= len(self._post.meta):  # no new update
             return
 
@@ -242,7 +242,7 @@ class Capsule:
         accompany_comment_id = set()
 
         if not self._is_initialized:  # initialization
-            base = Client.get_base(self._post_id).copy()
+            base = Client().get_base(self._post_id).copy()
             for m in base.pop('comment'):
                 accompany_comment_id.add(m['comment_id'])
                 comment_base[m['comment_id']] = m
@@ -300,5 +300,5 @@ def buy(post_id):
     return Capsule(post_id)
 
 
-def view():
-    return Client.get_view('')
+def view(limit=None,start=None,end=None):
+    return Client().get_view(limit,start,end)

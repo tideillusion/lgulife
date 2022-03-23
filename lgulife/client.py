@@ -1,4 +1,5 @@
 from requests import get
+from time import time
 
 from .utils import NotFoundError
 
@@ -42,15 +43,21 @@ class Client:
         return cls.change_cache[post_id]
 
     @classmethod
-    def get_view(cls, start=None):
-        if not start:
+    def get_view(cls, limit, start, end):
+        if limit is None and start is None and end is None:
             res = get('http://lgulife.furchain.xyz/market')
             if res.status_code == 200:
                 return res.json()
             else:
                 raise NotFoundError(res.text)
         else:
-            res = get(f'http://lgulife.furchain.xyz/market?start={start}')  # not implemented yet
+            if limit is not None:
+                res = get(f'http://lgulife.furchain.xyz/market?limit={limit}')
+            elif end is None:
+                res = get(f'http://lgulife.furchain.xyz/market?start={start}&end={int(time())}')
+            else:
+                res = get(f'http://lgulife.furchain.xyz/market?start={start}&end={end}')
+
             if res.status_code == 200:
                 return res.json()
             else:
