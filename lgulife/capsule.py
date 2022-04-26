@@ -94,7 +94,7 @@ class Comment:
             return
         if new_version not in self._change.keys():
             raise InvalidVersionError(new_version)
-        version_iter = iter(self._change.keys())
+        version_iter = iter(iter(self._change.keys()).__next__, new_version)
         if self._version is None or (self._version > new_version):
             self._cache[1].clear()
             self._cache[1].update(self._base)
@@ -300,5 +300,5 @@ def buy(post_id):
     return Capsule(post_id)
 
 
-def view(limit=None,start=None,end=None):
-    return Client().get_view(limit,start,end)
+def view(limit=None, start=None, end=None):
+    return Client().get_view(limit, start, end)
