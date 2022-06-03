@@ -85,6 +85,13 @@ class Comment:
     def copy(self):
         return Comment(self._base, self._change, self._version)
 
+    def __version_iter_until(self, sentinal):
+        for i in self._change.keys():
+            yield i
+            if i == sentinal:
+                return
+
+
     def checkout(self, new_version):
         if type(new_version) is int:
             new_version = list(self._change.keys())[new_version]
@@ -94,15 +101,16 @@ class Comment:
             return
         if new_version not in self._change.keys():
             raise InvalidVersionError(new_version)
-        version_iter = iter(iter(self._change.keys()).__next__, new_version)
+
+        version_iter = self.__version_iter_until(new_version)
         if self._version is None or (self._version > new_version):
             self._cache[1].clear()
             self._cache[1].update(self._base)
-            self._merge(self._cache[1],
-                        iter(version_iter.__next__, new_version))  # iter along until meeting new_version (included)
+            self._merge(self._cache[1],version_iter)  # iter along until meeting new_version (included)
         else:  # self._version < new_version
-            for _ in iter(version_iter.__next__, self._version):  # move pointer behind current version
-                pass
+            for j in version_iter:  # move pointer behind current version
+                if j==self._version:
+                    break
             self._merge(self._cache[1], version_iter)
         self._version = new_version
         self._cache[0] = new_version
@@ -214,6 +222,9 @@ class Capsule:
     def __str__(self):
         return f'<Capsule object of post {self._post_id}>'
 
+    def __expr__(self):
+        return f'<Capsule object of post {self._post_id}>'
+
     @property
     @_require_meta
     def post(self):
@@ -224,6 +235,7 @@ class Capsule:
     def comment(self):
         return self._comment
 
+    @_require_meta
     def checkout(self, version):
         for c in self._comment.values():
             c.checkout(version)
