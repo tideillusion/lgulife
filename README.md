@@ -87,7 +87,7 @@ True
 The `view` function lists the `post_id` and `title` of all posts that have been tracked.
 ```python
 >>> import lgulife
->>> lgulife.view()
+>>> lgulife.view(limit=5)
 
 {'5947': '现在mat1002的quiz要怎么办呀？还有其他的midterm那些都要线上进行了吗、',
  '5948': '开一条大家一起分享快乐的帖子',
